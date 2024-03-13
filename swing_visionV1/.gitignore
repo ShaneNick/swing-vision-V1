@@ -1,50 +1,105 @@
-# Environment
-.env
-.venv/
-env/*
+# Virtual environment:
+sv/
 
-# Build/test/coverage outputs
+# Byte-compiled / optimized / DLL files:
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging:
+.Python
 build/
+develop-eggs/
 dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 *.egg-info/
-.coverage
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+# Usually these files are written by a python script from a template
+# before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs:
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports:
 htmlcov/
 .tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+cover/
 
-# IDE and OS specific files
-Thumbs.db
-.DS_Store
-*.ipynb_checkpoints
+# Translations:
+*.mo
+*.pot
 
-# Local documentation
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation:
 docs/_build/
 
-# Temporary virtualenv files
-*.pyc
-*.pyo
+# PyBuilder:
+target/
 
-# Cache
-__pycache__/
+# Jupyter Notebook:
+.ipynb_checkpoints
 
-# Optional
-manage.py
+# pyenv:
+.python-version
 
-# Ignore local configuration
-local_settings.py
+# celery beat schedule file:
+celerybeat-schedule
 
-# Database files
-*.db
-*.sqlite3
+# dotenv:
+.env
 
-# Media files
-media/
-static/
+# Spyder project settings:
+.spyderproject
+.spyproject
 
-# Static files collected by django
-staticfiles/
+# Rope project settings:
+.ropeproject
 
-# JS/CSS Bundles
-*.bundle.js
-*.bundle.css
+# mkdocs documentation:
+/site
 
-creds.json  
+# mypy:
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker:
+.pyre/
+creds.json
