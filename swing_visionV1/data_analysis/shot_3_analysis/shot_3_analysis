@@ -1,0 +1,52 @@
+import os
+import sys
+
+# Assuming your current script is within 'shot_1_analysis' directory,
+# we navigate two levels up to reach the Django project root ('swing_visionV1')
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+sys.path.append(project_root)
+
+# Now attempting the import; adjust if your actual import path differs
+from data_analysis.sheets_credentials.data_frames import workbook_to_df, get_shots_df, get_points_df
+
+import pandas as pd
+
+shots_df = get_shots_df()
+points_df = get_points_df()
+
+# Merging the dataframes on 'Point', 'Game', and 'Set' columns
+merged_df = pd.merge(shots_df, points_df, left_on=['Point', 'Game', 'Set'], right_on=['Point Number', 'Game', 'Set'], how='left')
+
+def analyze_third_shot_setup(merged_df):
+    third_shot_counts = {}
+
+    for _, row in merged_df.iterrows():
+        if row['Shot'] == 1:  # Identifying the serve shot
+            serve_type = row['Type']
+            point = row['Point']
+            game = row['Game']
+            set_ = row['Set']
+
+            # Find the third shot in the same point
+            third_shot = merged_df[(merged_df['Point'] == point) & 
+                                   (merged_df['Game'] == game) & 
+                                   (merged_df['Set'] == set_) & 
+                                   (merged_df['Shot'] == 3)]
+            
+            if not third_shot.empty:
+                third_shot_type = third_shot.iloc[0]['Stroke']
+
+                if serve_type not in third_shot_counts:
+                    third_shot_counts[serve_type] = {'forehand': 0, 'backhand': 0}
+                
+                if third_shot_type in ['Forehand', 'Backhand']:
+                    third_shot_counts[serve_type][third_shot_type.lower()] += 1
+
+    return third_shot_counts
+
+# Example usage
+third_shot_analysis = analyze_third_shot_setup(merged_df)
+for serve_type, counts in third_shot_analysis.items():
+    print(f"Serve Type: {serve_type}")
+    for shot_type, count in counts.items():
+        print(f"  {shot_type.title()}: {count}")

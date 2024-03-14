@@ -17,46 +17,75 @@ points_df = get_points_df()
 # Merging the dataframes on 'Point', 'Game', and 'Set' columns
 merged_df = pd.merge(shots_df, points_df, left_on=['Point', 'Game', 'Set'], right_on=['Point Number', 'Game', 'Set'], how='left')
 
-#Totals number of points won based off serve spin (Ex: Flat, spin, slice)
-def calculate_player_serve_win_percentage_losses_and_ratios(merged_df):
-    serve_counts = {}  # Tracks total serves by type
-    wins_counts = {}  # Tracks wins by serve type
-    losses_counts = {}  # Tracks losses by serve type
+def calculate_serve_win_percentage_losses_and_direction_ratios(merged_df):
+    serve_counts = {}
+    wins_counts = {}
+    losses_counts = {}
+    direction_counts = {}
+
+    total_serves = 0
 
     for _, row in merged_df.iterrows():
-        player_as_str = str(row['Player'])
-        serve_type = str(row['Type']).lower()
-
-        if player_as_str.startswith('Player') and (serve_type.startswith('first_serve') or serve_type.startswith('second_serve')):
+        if "Player" in str(row['Player']) and row['Type'] in ['first_serve', 'second_serve']:
             spin = row['Spin']
+            direction = row['Direction']
             point_winner = row['Point Winner']
-            
+
             if spin not in serve_counts:
                 serve_counts[spin] = 0
                 wins_counts[spin] = 0
                 losses_counts[spin] = 0
-            
+                direction_counts[spin] = {}
+
+            if direction not in direction_counts[spin]:
+                direction_counts[spin][direction] = {'total': 0, 'wins': 0, 'losses': 0}
+
             serve_counts[spin] += 1
+            total_serves += 1
+            direction_counts[spin][direction]['total'] += 1
+
             if point_winner == 'host':
                 wins_counts[spin] += 1
+                direction_counts[spin][direction]['wins'] += 1
             elif point_winner == 'guest':
                 losses_counts[spin] += 1
+                direction_counts[spin][direction]['losses'] += 1
 
     output_data = {}
-    for spin, total_serves in serve_counts.items():
-        wins = wins_counts[spin]
-        losses = losses_counts[spin]
-        win_percentage = (wins / total_serves) * 100
-        win_ratio = f"{wins}/{total_serves}"
-        loss_ratio = f"{losses}/{total_serves}"
-        output_data[spin] = {"Win Percentage": win_percentage, "Wins Ratio": win_ratio, "Losses": losses, "Loss Ratio": loss_ratio}
+    for spin, dir_stats in direction_counts.items():
+        spin_total = serve_counts[spin]
+        spin_wins = wins_counts[spin]
+        spin_losses = losses_counts[spin]
+        spin_win_percentage = (spin_wins / spin_total) * 100 if spin_total > 0 else 0
+        output_data[spin] = {"Win Percentage": f"{spin_win_percentage:.2f}%", "Total Serves": spin_total, "Wins": spin_wins, "Losses": spin_losses, "Directions": {}}
+        for direction, counts in dir_stats.items():
+            dir_win_percentage = (counts['wins'] / counts['total']) * 100 if counts['total'] > 0 else 0
+            output_data[spin]["Directions"][direction] = {
+                "Win Percentage": f"{dir_win_percentage:.2f}%",
+                "Wins/Losses": f"{counts['wins']}/{counts['losses']}",
+                "Total Serves": counts['total'],
+                "Percentage of Spin Total": f"{(counts['total'] / spin_total) * 100:.2f}%",
+                "Percentage of All Serves": f"{(counts['total'] / total_serves) * 100:.2f}%"
+            }
 
     return output_data
 
-player_stats = calculate_player_serve_win_percentage_losses_and_ratios(merged_df)
+# Example usage
+# Example usage and output formatting
+player_stats = calculate_serve_win_percentage_losses_and_direction_ratios(merged_df)
 for spin, stats in player_stats.items():
-    print(f"{spin} Serve: {stats['Win Percentage']:.2f}% points won, Wins ({stats['Wins Ratio']}),  {stats['Losses']} losses ({stats['Loss Ratio']})")
-
+    print(f"Spin Type: {spin}")
+    print(f"  Overall Win Percentage for {spin} Serves: {stats['Win Percentage']} (Calculated as Wins/Total Serves)")
+    print(f"  Total {spin} Serves: {stats['Total Serves']}")
+    print(f"  Wins with {spin} Serves: {stats['Wins']}")
+    print(f"  Losses with {spin} Serves: {stats['Losses']}")
+    
+    for direction, dir_stats in stats["Directions"].items():
+        print(f"    Direction: {direction}")
+        print(f"    Win Percentage in this Direction: {dir_stats['Win Percentage']} (Wins/Losses for {direction})")
+        print(f"    Total Serves in this Direction: {dir_stats['Total Serves']}")
+        print(f"    This Direction as a Percentage of Total {spin} Serves: {dir_stats['Percentage of Spin Total']}%")
+        print(f"    This Direction as a Percentage of All Serves: {dir_stats['Percentage of All Serves']}%")
 
 print("---------")
 
@@ -102,6 +131,8 @@ def analyze_serve_speed_spin_success(merged_df):
 
 # Ensure merged_df is defined as per your earlier setup before calling this function
 analyze_serve_speed_spin_success(merged_df)
+
+print("---------")
 
 
 
